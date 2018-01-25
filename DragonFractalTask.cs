@@ -33,18 +33,19 @@ namespace Fractals
             for (var i = 0; i < iterationsCount; i++)
             {
                 var nextNumber = random.Next(10);
+                Console.WriteLine(nextNumber);
                 if (nextNumber < 5)
                 {
-                    x = (x - y) / 2;
-                    y = (x + y) / 2;
+                    x = (x * Math.Cos(45 * Math.PI / 180) - y * Math.Sin(45 * Math.PI / 180)) / Math.Sqrt(2);
+                    y = (x * Math.Sin(45 * Math.PI / 180) + y * Math.Cos(45 * Math.PI / 180)) / Math.Sqrt(2);
                 }
                 else
                 {
-                    x = Math.Sqrt(2) * (-x - y) / 2 / Math.Sqrt(2);
-                    y = (x - y) / 2;
+                    x = (x * Math.Cos(135 * Math.PI / 180) - y * Math.Sin(135 * Math.PI / 180)) / Math.Sqrt(2) + 1;
+                    y = (x * Math.Sin(135 * Math.PI / 180) + y * Math.Cos(135 * Math.PI / 180)) / Math.Sqrt(2);
                 }
                 pixels.SetPixel(x, y);
             }
 		}
-	}
+    }
 }
