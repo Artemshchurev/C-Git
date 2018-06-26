@@ -12,13 +12,11 @@ namespace Monobilliards
             IList<int> usedBalls = new List<int>();
             for (var i = 0; i < inspectedBalls.Count; i++ )
             {
+                if (inspectedBalls[i] > inspectedBalls.Count) return true;
                 if (ballsInTheHole.Count != 0)
                 {
                     if (ballsInTheHole.Peek() > inspectedBalls[i]) return true;
-                    if(ballsInTheHole.Peek() == inspectedBalls[i])
-                    {
-                        ballsInTheHole.Pop();
-                    }
+                    if(ballsInTheHole.Peek() == inspectedBalls[i]) ballsInTheHole.Pop();
                 }
                 if (ballsInTheHole.Count == 0 || ballsInTheHole.Peek() < inspectedBalls[i])
                 {
