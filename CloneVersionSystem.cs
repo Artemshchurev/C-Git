@@ -78,7 +78,11 @@ namespace Clones
 
         public object Clone()
         {
-            return this.MemberwiseClone();
+            return new CaminClone
+            {
+                learnedPrograms = this.learnedPrograms,
+                rollBackedPrograms = this.rollBackedPrograms
+            };
         }
     }
 
