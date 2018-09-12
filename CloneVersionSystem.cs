@@ -5,7 +5,7 @@ namespace Clones
 {
     public class CloneVersionSystem : ICloneVersionSystem
     {
-        public Dictionary<string, CaminClone> clones = new Dictionary<string, CaminClone>()
+        public Dictionary<string, CaminClone> Clones = new Dictionary<string, CaminClone>()
         {
             {"1", new CaminClone()}
         };
@@ -16,107 +16,130 @@ namespace Clones
             switch (command[0])
             {
                 case "learn":
-                    return clones[command[1]].Learn(command[2]);
+                    return Clones[command[1]].Learn(command[2]);
                 case "rollback":
-                    return clones[command[1]].Rollback();
+                    return Clones[command[1]].Rollback();
                 case "relearn":
-                    return clones[command[1]].Relearn();
+                    return Clones[command[1]].Relearn();
                 case "clone":
                     return MakeClone(command[1]);
                 case "check":
-                    return clones[command[1]].GetLastLearnedProgram();
-
+                    return Clones[command[1]].GetLastLearnedProgram();
             }
             return null;
         }
 
         private string MakeClone(string stringCloneNumber)
         {
-            int intCloneNumber = int.Parse(stringCloneNumber);
+            int intCloneNumber = Clones.Count;
             intCloneNumber++;
             string stringNewCloneNumber = intCloneNumber.ToString();
-            CaminClone newClone = (CaminClone)clones[stringCloneNumber].Clone();
-            clones.Add(stringNewCloneNumber, newClone);
+
+            var learnedPrograms = (CustomList)Clones[stringCloneNumber].LearnedPrograms.Clone();
+            var rollBackedPrograms = (CustomList)Clones[stringCloneNumber].RollBackedPrograms.Clone();
+
+            Clones.Add(stringNewCloneNumber, new CaminClone{ 
+                LearnedPrograms = learnedPrograms, 
+                RollBackedPrograms = rollBackedPrograms
+            });
             return null;
         }
-
     }
-    public class CaminClone : ICloneable
+
+    public class CaminClone
     {
         public CaminClone()
         {
-            this.learnedPrograms = new Queue();
-            this.rollBackedPrograms = new Queue();
+            this.LearnedPrograms = new CustomList();
+            this.RollBackedPrograms = new CustomList();
         }
-        public Queue learnedPrograms;
-        public Queue rollBackedPrograms;
+        public CustomList LearnedPrograms;
+        public CustomList RollBackedPrograms;
 
         public string Learn(String program)
         {
-            this.learnedPrograms.Enqueue(program);
+            this.LearnedPrograms.Add(program);
             return null;
         }
 
         public string Rollback()
         {
-            this.rollBackedPrograms.Enqueue(this.learnedPrograms.Dequeue());
+            string lastLearnedProgram = this.LearnedPrograms.GetTail();
+            this.RollBackedPrograms.Add(lastLearnedProgram);
+            this.LearnedPrograms.Remove(lastLearnedProgram);
             return null;
         }
 
         public string Relearn()
         {
-            this.learnedPrograms.Enqueue(this.rollBackedPrograms.Dequeue());
+            string lastRollBackedProgram = this.RollBackedPrograms.GetTail();
+            this.LearnedPrograms.Add(lastRollBackedProgram);
+            this.RollBackedPrograms.Remove(lastRollBackedProgram);
             return null;
         }
 
         public string GetLastLearnedProgram()
         {
-            var lastProgram = learnedPrograms.GetTail();
+            var lastProgram = LearnedPrograms.GetTail();
             if (lastProgram == null) return "basic";
             return lastProgram;
         }
-
-        public object Clone()
-        {
-            return new CaminClone
-            {
-                learnedPrograms = this.learnedPrograms,
-                rollBackedPrograms = this.rollBackedPrograms
-            };
-        }
+      
     }
 
     public class CloneProgram
     {
-        public string Value { get; set; }
-        public CloneProgram Prev { get; set; }
+        public string Value { get; set; } = null;
+        public CloneProgram Next { get; set; } = null;
     }
 
-    public class Queue
+    public class CustomList : ICloneable
     {
         CloneProgram head;
         CloneProgram tail;
 
-        public void Enqueue(string value)
+        public void Add(string value)
         {
+            var item = new CloneProgram { Value = value };
             if (head == null)
-                tail = head = new CloneProgram { Value = value, Prev = null };
+                tail = head = item;
             else
             {
-                var item = new CloneProgram { Value = value, Prev = null };
-                item.Prev = tail;
+                tail.Next = item;
                 tail = item;
             }
         }
 
-        public string Dequeue()
+        public void Remove(string value)
         {
-            if (head == null) throw new InvalidOperationException();
-            var result = tail.Value;
-            tail = tail.Prev;
-            if (tail == null)
-                head = null;
-            return result;
+            CloneProgram previous = null;
+            CloneProgram current = head;
+            while(current != null)
+            {
+                if(current.Value.Equals(value))
+                {
+                    if (previous != null)
+                    {
+                        previous.Next = current.Next;
+                        if (current.Next == null)
+                        {
+                            previous.Next = null;
+                            tail = previous;
+                        }
+                    }
+                    else
+                    {
+                        head = current.Next;
+                        if(head == null)
+                        {
+                            tail = null;
+                        }
+                    }
+                    //break;
+                }
+                previous = current;
+                current = current.Next;
+            }
         }
 
         public string GetTail()
@@ -124,6 +147,14 @@ namespace Clones
             if (tail == null) return null;
             return tail.Value;
         }
-    }
 
+        public object Clone()
+        {
+            return new CustomList
+            {
+                head = this.head,
+                tail = this.tail
+            };
+        }
+    }
 }
